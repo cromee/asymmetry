@@ -1,0 +1,20 @@
+{
+  "name": "asymmetry-backend",
+  "version": "0.1.0",
+  "description": "Backend service providing landmark data based on map selections.",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "dev": "ts-node src/server.ts"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.11.17",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
+}
