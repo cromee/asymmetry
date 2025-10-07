@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TravelPlanRequest",
+  "type": "object",
+  "properties": {
+    "destination": {
+      "type": "string",
+      "description": "여행지 도시 또는 국가명"
+    },
+    "startDate": {
+      "type": ["string", "null"],
+      "format": "date",
+      "description": "여행 시작일 (선택 사항)"
+    },
+    "endDate": {
+      "type": ["string", "null"],
+      "format": "date",
+      "description": "여행 종료일 (선택 사항)"
+    }
+  },
+  "required": ["destination"],
+  "additionalProperties": false
+}
