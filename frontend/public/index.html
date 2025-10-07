@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>여행 설계하기</title>
+  <style>
+    :root {
+      color-scheme: light;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Pretendard", "Segoe UI", Arial, sans-serif;
+      background: #f5f7fb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #1c1c1f;
+    }
+
+    main {
+      width: min(640px, 92vw);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+    }
+
+    h1 {
+      font-size: clamp(2.4rem, 6vw, 3.2rem);
+      font-weight: 600;
+      margin: 0;
+      text-align: center;
+      letter-spacing: -0.02em;
+    }
+
+    p.lead {
+      margin: 0;
+      color: #5c6171;
+      font-size: 1.05rem;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    form {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .search-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background-color: #ffffff;
+      border-radius: 999px;
+      box-shadow: 0 18px 30px rgba(16, 25, 57, 0.08);
+      border: 1px solid rgba(18, 31, 64, 0.08);
+    }
+
+    .search-bar input[type="search"] {
+      flex: 1;
+      font-size: 1.05rem;
+      border: none;
+      outline: none;
+      background: transparent;
+      padding: 4px 0;
+    }
+
+    .search-bar button {
+      border: none;
+      background-color: #4361ee;
+      color: #ffffff;
+      font-weight: 600;
+      padding: 12px 28px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .search-bar button:hover,
+    .search-bar button:focus-visible {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 24px rgba(67, 97, 238, 0.25);
+    }
+
+    .date-row {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .date-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background-color: rgba(255, 255, 255, 0.85);
+      border-radius: 14px;
+      padding: 14px 16px;
+      border: 1px solid rgba(28, 28, 31, 0.06);
+    }
+
+    .date-field label {
+      font-size: 0.82rem;
+      letter-spacing: 0.02em;
+      color: #7d8395;
+      text-transform: uppercase;
+    }
+
+    .date-field input[type="date"] {
+      border: none;
+      background: transparent;
+      font-size: 1rem;
+      color: #1c1c1f;
+      outline: none;
+    }
+
+    .date-field input[type="date"]::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+    }
+
+    .hint {
+      color: #83889b;
+      font-size: 0.9rem;
+      text-align: center;
+      margin-top: -4px;
+    }
+
+    .suggestions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      color: #4361ee;
+      font-size: 0.95rem;
+    }
+
+    .suggestions button {
+      background: rgba(67, 97, 238, 0.08);
+      border: none;
+      border-radius: 999px;
+      padding: 8px 16px;
+      color: inherit;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .suggestions button:hover,
+    .suggestions button:focus-visible {
+      background: rgba(67, 97, 238, 0.16);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div>
+      <h1>어디로 떠나고 싶나요?</h1>
+      <p class="lead">여행지와 날짜를 입력하면 맞춤 일정 초안을 만들어 드릴게요. 날짜는 비워둬도 괜찮아요!</p>
+    </div>
+
+    <form>
+      <div class="search-bar">
+        <input
+          type="search"
+          name="destination"
+          list="destination-list"
+          placeholder="나라 또는 도시를 입력하세요"
+          autocomplete="off"
+          aria-label="여행지를 검색하세요"
+          required
+        />
+        <datalist id="destination-list">
+          <option value="서울, 대한민국"></option>
+          <option value="부산, 대한민국"></option>
+          <option value="제주, 대한민국"></option>
+          <option value="도쿄, 일본"></option>
+          <option value="오사카, 일본"></option>
+          <option value="후쿠오카, 일본"></option>
+          <option value="타이베이, 대만"></option>
+          <option value="방콕, 태국"></option>
+          <option value="파리, 프랑스"></option>
+          <option value="런던, 영국"></option>
+          <option value="로마, 이탈리아"></option>
+          <option value="바르셀로나, 스페인"></option>
+          <option value="하와이, 미국"></option>
+          <option value="뉴욕, 미국"></option>
+          <option value="시드니, 호주"></option>
+          <option value="발리, 인도네시아"></option>
+        </datalist>
+        <button type="submit">여행 찾기</button>
+      </div>
+
+      <div class="date-row">
+        <div class="date-field">
+          <label for="start-date">출발</label>
+          <input type="date" id="start-date" name="start-date" aria-label="출발 날짜" />
+        </div>
+        <div class="date-field">
+          <label for="end-date">귀국</label>
+          <input type="date" id="end-date" name="end-date" aria-label="귀국 날짜" />
+        </div>
+      </div>
+
+      <p class="hint">날짜를 비워두면 유연한 일정으로 추천해드릴게요.</p>
+    </form>
+
+    <div class="suggestions" aria-label="인기 여행지">
+      <button type="button" data-destination="파리, 프랑스">파리</button>
+      <button type="button" data-destination="하와이, 미국">하와이</button>
+      <button type="button" data-destination="바르셀로나, 스페인">바르셀로나</button>
+      <button type="button" data-destination="오사카, 일본">오사카</button>
+      <button type="button" data-destination="방콕, 태국">방콕</button>
+    </div>
+  </main>
+
+  <script>
+    const suggestionButtons = document.querySelectorAll('.suggestions button');
+    const destinationInput = document.querySelector('input[name="destination"]');
+
+    suggestionButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        destinationInput.value = button.dataset.destination || button.textContent.trim();
+        destinationInput.focus();
+      });
+    });
+  </script>
+</body>
+</html>
