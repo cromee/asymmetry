@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>여행 설계하기</title>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-o9N1j7kGStG7tGhtZHUq3VS92Smh2SwHs6Q03Pp4S94="
+    crossorigin=""
+  />
   <style>
     :root {
       color-scheme: light;
@@ -161,6 +167,46 @@
       background: rgba(67, 97, 238, 0.16);
     }
 
+    .map-section {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: #ffffff;
+      border-radius: 28px;
+      padding: 24px;
+      border: 1px solid rgba(18, 31, 64, 0.08);
+      box-shadow: 0 24px 40px rgba(16, 25, 57, 0.1);
+    }
+
+    .map-section-header h2 {
+      margin: 0;
+      font-size: 1.4rem;
+      letter-spacing: -0.01em;
+    }
+
+    .map-section-header p {
+      margin: 6px 0 0;
+      color: #5c6171;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    #map {
+      width: 100%;
+      height: clamp(260px, 45vh, 380px);
+      border-radius: 20px;
+      border: 1px solid rgba(18, 31, 64, 0.12);
+      overflow: hidden;
+    }
+
+    .map-hint {
+      margin: 0;
+      color: #83889b;
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: 0.01ms !important;
@@ -231,18 +277,495 @@
       <button type="button" data-destination="오사카, 일본">오사카</button>
       <button type="button" data-destination="방콕, 태국">방콕</button>
     </div>
+
+    <section class="map-section" aria-label="선택한 지역 지도">
+      <div class="map-section-header">
+        <h2>관광명소 지도</h2>
+        <p>선택한 여행지의 주요 명소를 지도에서 미리 살펴보세요.</p>
+      </div>
+      <div id="map" role="img" aria-label="관광명소 지도"></div>
+      <p class="map-hint" aria-live="polite">여행지를 선택하면 맞춤 명소를 지도에서 확인할 수 있어요.</p>
+    </section>
   </main>
 
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-o9N1j7kGStG7tGhtZHUq3VS92Smh2SwHs6Q03Pp4S94="
+    crossorigin=""
+  ></script>
   <script>
+    const destinationData = {
+      '서울, 대한민국': {
+        label: '서울',
+        center: [37.5665, 126.978],
+        zoom: 13,
+        attractions: [
+          {
+            name: '경복궁',
+            description: '조선 시대의 법궁으로 한국 전통 건축의 아름다움을 느낄 수 있어요.',
+            coords: [37.579617, 126.977041],
+          },
+          {
+            name: '북촌 한옥마을',
+            description: '아기자기한 골목길과 한옥이 어우러진 도심 속 전통 마을이에요.',
+            coords: [37.582604, 126.983998],
+          },
+          {
+            name: '명동 거리',
+            description: '쇼핑과 길거리 음식을 동시에 즐길 수 있는 대표 관광 거리예요.',
+            coords: [37.563758, 126.98261],
+          },
+        ],
+      },
+      '부산, 대한민국': {
+        label: '부산',
+        center: [35.1796, 129.0756],
+        zoom: 13,
+        attractions: [
+          {
+            name: '해운대 해수욕장',
+            description: '탁 트인 바다와 고운 모래사장이 펼쳐진 부산 대표 해변이에요.',
+            coords: [35.158698, 129.160384],
+          },
+          {
+            name: '감천 문화마을',
+            description: '알록달록한 계단식 마을에서 예쁜 사진을 남겨보세요.',
+            coords: [35.097764, 129.010592],
+          },
+          {
+            name: '자갈치 시장',
+            description: '부산의 싱싱한 해산물을 맛볼 수 있는 전통 시장입니다.',
+            coords: [35.097982, 129.03688],
+          },
+        ],
+      },
+      '제주, 대한민국': {
+        label: '제주',
+        center: [33.4996, 126.5312],
+        zoom: 11,
+        attractions: [
+          {
+            name: '한라산 국립공원',
+            description: '사계절 아름다운 풍경을 자랑하는 제주 최고의 자연 명소예요.',
+            coords: [33.361666, 126.529167],
+          },
+          {
+            name: '성산일출봉',
+            description: '유네스코 세계자연유산으로 지정된 장엄한 일출 명소입니다.',
+            coords: [33.458785, 126.942217],
+          },
+          {
+            name: '협재 해수욕장',
+            description: '에메랄드빛 바다와 하얀 모래사장이 어우러진 인기 해변이에요.',
+            coords: [33.394896, 126.239246],
+          },
+        ],
+      },
+      '도쿄, 일본': {
+        label: '도쿄',
+        center: [35.6762, 139.6503],
+        zoom: 12,
+        attractions: [
+          {
+            name: '아사쿠사 센소지',
+            description: '일본에서 가장 오래된 사찰로 전통과 문화가 살아 있어요.',
+            coords: [35.714765, 139.796655],
+          },
+          {
+            name: '시부야 스크램블 교차로',
+            description: '화려한 네온사인과 활기찬 분위기를 만끽할 수 있는 도쿄의 상징입니다.',
+            coords: [35.659487, 139.700438],
+          },
+          {
+            name: '도쿄 스카이트리',
+            description: '도쿄 전경을 한눈에 담을 수 있는 634m 높이의 전망대.',
+            coords: [35.710063, 139.8107],
+          },
+        ],
+      },
+      '오사카, 일본': {
+        label: '오사카',
+        center: [34.6937, 135.5023],
+        zoom: 12,
+        attractions: [
+          {
+            name: '오사카 성',
+            description: '벚꽃 명소로도 유명한 오사카의 랜드마크예요.',
+            coords: [34.687315, 135.52596],
+          },
+          {
+            name: '도톤보리',
+            description: '글리코 간판으로 유명한 화려한 먹거리 거리입니다.',
+            coords: [34.668716, 135.501376],
+          },
+          {
+            name: '유니버설 스튜디오 재팬',
+            description: '다양한 어트랙션과 퍼레이드를 즐길 수 있는 테마파크.',
+            coords: [34.665442, 135.432338],
+          },
+        ],
+      },
+      '후쿠오카, 일본': {
+        label: '후쿠오카',
+        center: [33.5902, 130.4017],
+        zoom: 13,
+        attractions: [
+          {
+            name: '후쿠오카 타워',
+            description: '후쿠오카의 바다와 도시 전경을 감상할 수 있는 전망 명소.',
+            coords: [33.593309, 130.351797],
+          },
+          {
+            name: '오호리 공원',
+            description: '도심 속 휴식 공간으로 산책과 보트를 즐길 수 있어요.',
+            coords: [33.586671, 130.376118],
+          },
+          {
+            name: '캐널시티 하카타',
+            description: '쇼핑과 식사를 한 번에 즐길 수 있는 복합 쇼핑몰입니다.',
+            coords: [33.594297, 130.412435],
+          },
+        ],
+      },
+      '타이베이, 대만': {
+        label: '타이베이',
+        center: [25.033, 121.5654],
+        zoom: 12,
+        attractions: [
+          {
+            name: '타이베이 101',
+            description: '초고층 전망대에서 타이베이 야경을 감상할 수 있어요.',
+            coords: [25.033976, 121.564538],
+          },
+          {
+            name: '스린 야시장',
+            description: '다양한 길거리 음식을 맛볼 수 있는 타이베이 대표 야시장입니다.',
+            coords: [25.088047, 121.525229],
+          },
+          {
+            name: '중정기념당',
+            description: '푸른 지붕과 하얀 외관이 인상적인 역사 기념관이에요.',
+            coords: [25.034044, 121.521478],
+          },
+        ],
+      },
+      '방콕, 태국': {
+        label: '방콕',
+        center: [13.7563, 100.5018],
+        zoom: 12,
+        attractions: [
+          {
+            name: '왕궁 (그랜드 팰리스)',
+            description: '태국 왕실의 화려한 건축물과 에메랄드 사원을 감상할 수 있어요.',
+            coords: [13.750041, 100.491351],
+          },
+          {
+            name: '왓 아룬',
+            description: '짜오프라야 강변에 자리한 아름다운 새벽사원입니다.',
+            coords: [13.743713, 100.488965],
+          },
+          {
+            name: '짜뚜짝 주말시장',
+            description: '수천 개의 상점이 모인 대규모 쇼핑 천국이에요.',
+            coords: [13.799524, 100.55011],
+          },
+        ],
+      },
+      '파리, 프랑스': {
+        label: '파리',
+        center: [48.8566, 2.3522],
+        zoom: 13,
+        attractions: [
+          {
+            name: '루브르 박물관',
+            description: '모나리자를 비롯한 수많은 예술 작품이 모여 있는 세계 최대의 미술관입니다.',
+            coords: [48.860611, 2.337644],
+          },
+          {
+            name: '에펠탑',
+            description: '파리의 상징적인 철탑으로 야경이 특히 아름다워요.',
+            coords: [48.85837, 2.294481],
+          },
+          {
+            name: '몽마르트 언덕',
+            description: '사크레쾨르 성당과 예술가들의 거리로 유명한 감성 여행지입니다.',
+            coords: [48.886704, 2.343104],
+          },
+        ],
+      },
+      '런던, 영국': {
+        label: '런던',
+        center: [51.5072, -0.1276],
+        zoom: 12,
+        attractions: [
+          {
+            name: '버킹엄 궁전',
+            description: '근위병 교대식을 볼 수 있는 영국 왕실의 공식 거처입니다.',
+            coords: [51.501364, -0.14189],
+          },
+          {
+            name: '타워 브리지',
+            description: '템스강을 가로지르는 런던의 랜드마크 다리입니다.',
+            coords: [51.505456, -0.075356],
+          },
+          {
+            name: '대영박물관',
+            description: '세계 각국의 유물이 전시된 무료 입장 박물관이에요.',
+            coords: [51.519413, -0.126957],
+          },
+        ],
+      },
+      '로마, 이탈리아': {
+        label: '로마',
+        center: [41.9028, 12.4964],
+        zoom: 12,
+        attractions: [
+          {
+            name: '콜로세움',
+            description: '고대 로마의 역사를 느낄 수 있는 원형 경기장입니다.',
+            coords: [41.89021, 12.492231],
+          },
+          {
+            name: '트레비 분수',
+            description: '동전을 던지며 소원을 비는 로마의 명소예요.',
+            coords: [41.900932, 12.483313],
+          },
+          {
+            name: '바티칸 시국',
+            description: '성베드로 대성당과 시스티나 성당이 있는 카톨릭의 중심지입니다.',
+            coords: [41.902169, 12.453937],
+          },
+        ],
+      },
+      '바르셀로나, 스페인': {
+        label: '바르셀로나',
+        center: [41.3874, 2.1686],
+        zoom: 12,
+        attractions: [
+          {
+            name: '사그라다 파밀리아',
+            description: '가우디의 미완성 대성당으로 독창적인 건축미를 자랑해요.',
+            coords: [41.403629, 2.174356],
+          },
+          {
+            name: '구엘 공원',
+            description: '알록달록한 모자이크가 인상적인 가우디의 또 다른 작품입니다.',
+            coords: [41.414494, 2.152694],
+          },
+          {
+            name: '람블라스 거리',
+            description: '활기찬 거리 공연과 맛집이 가득한 바르셀로나의 중심 거리예요.',
+            coords: [41.38094, 2.173565],
+          },
+        ],
+      },
+      '하와이, 미국': {
+        label: '하와이 (호놀룰루)',
+        center: [21.3069, -157.8583],
+        zoom: 12,
+        attractions: [
+          {
+            name: '와이키키 비치',
+            description: '에메랄드빛 바다가 펼쳐진 호놀룰루의 대표 해변입니다.',
+            coords: [21.276653, -157.827543],
+          },
+          {
+            name: '다이아몬드 헤드',
+            description: '짧은 트레킹 후 호놀룰루 전경을 감상할 수 있는 화산 분화구.',
+            coords: [21.261894, -157.805833],
+          },
+          {
+            name: '진주만 국립기념관',
+            description: '역사적인 전투 현장을 기리는 추모 공간입니다.',
+            coords: [21.36561, -157.950157],
+          },
+        ],
+      },
+      '뉴욕, 미국': {
+        label: '뉴욕',
+        center: [40.7128, -74.006],
+        zoom: 12,
+        attractions: [
+          {
+            name: '타임스 스퀘어',
+            description: '화려한 전광판과 공연으로 가득한 뉴욕의 심장부입니다.',
+            coords: [40.758, -73.9855],
+          },
+          {
+            name: '센트럴 파크',
+            description: '도심 속 오아시스로 사계절 다른 매력을 선사해요.',
+            coords: [40.7829, -73.9654],
+          },
+          {
+            name: '자유의 여신상',
+            description: '미국의 상징이자 항구를 지키는 거대한 여신상입니다.',
+            coords: [40.689249, -74.0445],
+          },
+        ],
+      },
+      '시드니, 호주': {
+        label: '시드니',
+        center: [-33.8688, 151.2093],
+        zoom: 12,
+        attractions: [
+          {
+            name: '시드니 오페라 하우스',
+            description: '세계적인 공연장이자 호주를 대표하는 건축물입니다.',
+            coords: [-33.856784, 151.215297],
+          },
+          {
+            name: '보타닉 가든',
+            description: '푸른 잔디와 바다 전망이 매력적인 도심 속 정원이에요.',
+            coords: [-33.864167, 151.216667],
+          },
+          {
+            name: '본다이 비치',
+            description: '서핑과 일광욕을 즐기기 좋은 호주의 인기 해변입니다.',
+            coords: [-33.890842, 151.274292],
+          },
+        ],
+      },
+      '발리, 인도네시아': {
+        label: '발리',
+        center: [-8.3405, 115.092],
+        zoom: 10,
+        attractions: [
+          {
+            name: '우붓 원숭이 숲',
+            description: '자연 속에서 원숭이와 교감할 수 있는 신비로운 숲이에요.',
+            coords: [-8.519, 115.258],
+          },
+          {
+            name: '타나롯 사원',
+            description: '바다 위 바위섬에 세워진 석양이 아름다운 사원입니다.',
+            coords: [-8.621962, 115.086097],
+          },
+          {
+            name: '꾸따 비치',
+            description: '활기찬 분위기와 서핑 스팟으로 유명한 발리의 대표 해변.',
+            coords: [-8.717738, 115.168146],
+          },
+        ],
+      },
+    };
+
     const suggestionButtons = document.querySelectorAll('.suggestions button');
     const destinationInput = document.querySelector('input[name="destination"]');
+    const mapHint = document.querySelector('.map-hint');
+    const form = document.querySelector('form');
+    const defaultDestination = '서울, 대한민국';
+
+    const map = L.map('map', {
+      zoomControl: true,
+      attributionControl: true,
+    }).setView(destinationData[defaultDestination].center, destinationData[defaultDestination].zoom);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 18,
+    }).addTo(map);
+
+    const markersLayer = L.layerGroup().addTo(map);
+
+    const normalize = (value = '') => value.replace(/\s+/g, '').toLowerCase();
+
+    const findDestinationKey = (input) => {
+      if (!input) return null;
+      const normalizedInput = normalize(input);
+
+      return (
+        Object.keys(destinationData).find((key) => {
+          const normalizedKey = normalize(key);
+          if (normalizedInput === normalizedKey) return true;
+
+          const [city] = key.split(',');
+          if (city && normalized(city) === normalizedInput) {
+            return true;
+          }
+
+          return false;
+        }) || null
+      );
+    };
+
+    const renderDestination = (destinationKey) => {
+      const config = destinationData[destinationKey];
+      if (!config) {
+        return null;
+      }
+
+      map.setView(config.center, config.zoom);
+      markersLayer.clearLayers();
+
+      config.attractions.forEach((attraction) => {
+        const marker = L.marker(attraction.coords, {
+          title: attraction.name,
+        });
+
+        marker.bindPopup(
+          `<strong>${attraction.name}</strong><br />${attraction.description}`,
+          {
+            maxWidth: 260,
+          }
+        );
+
+        marker.addTo(markersLayer);
+      });
+
+      return config;
+    };
+
+    const showDestination = (rawInput) => {
+      const trimmed = (rawInput || '').trim();
+
+      if (!trimmed) {
+        const fallback = renderDestination(defaultDestination);
+        if (fallback) {
+          mapHint.textContent = '여행지를 선택하면 맞춤 명소를 지도에서 확인할 수 있어요.';
+        }
+        return;
+      }
+
+      const matchedKey = findDestinationKey(trimmed);
+      if (matchedKey) {
+        const config = renderDestination(matchedKey);
+        if (config) {
+          mapHint.textContent = `${config.label}의 대표 관광명소 ${config.attractions.length}곳을 지도에 표시했어요.`;
+        }
+      } else {
+        const fallback = renderDestination(defaultDestination);
+        if (fallback) {
+          mapHint.textContent = `${trimmed} 지역의 지도 데이터는 준비 중이에요. 대신 서울의 인기 명소를 보여드릴게요.`;
+        }
+      }
+    };
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      showDestination(destinationInput.value);
+    });
+
+    destinationInput.addEventListener('change', () => {
+      showDestination(destinationInput.value);
+    });
+
+    destinationInput.addEventListener('search', () => {
+      showDestination(destinationInput.value);
+    });
 
     suggestionButtons.forEach((button) => {
       button.addEventListener('click', () => {
-        destinationInput.value = button.dataset.destination || button.textContent.trim();
+        const destinationKey = button.dataset.destination || button.textContent.trim();
+        destinationInput.value = destinationKey;
+        showDestination(destinationKey);
         destinationInput.focus();
       });
     });
+
+    const initialConfig = renderDestination(defaultDestination);
+    if (initialConfig) {
+      mapHint.textContent = `${initialConfig.label}의 대표 관광명소 ${initialConfig.attractions.length}곳을 지도에 표시했어요.`;
+    }
   </script>
 </body>
 </html>
