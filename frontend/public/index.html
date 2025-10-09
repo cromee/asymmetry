@@ -651,6 +651,8 @@
 
     const suggestionButtons = document.querySelectorAll('.suggestions button');
     const destinationInput = document.querySelector('input[name="destination"]');
+    const destinationList = document.getElementById('destination-list');
+    const allDestinationKeys = Object.keys(destinationData);
     const mapHint = document.querySelector('.map-hint');
     const form = document.querySelector('form');
     const defaultDestination = '서울, 대한민국';
@@ -715,6 +717,24 @@
       return config;
     };
 
+    const updateDatalistOptions = (query = '') => {
+      if (!destinationList) return;
+
+      const normalizedQuery = normalize(query);
+      const matchingKeys = allDestinationKeys.filter((key) => {
+        if (!normalizedQuery) return true;
+        return normalize(key).includes(normalizedQuery);
+      });
+
+      destinationList.innerHTML = '';
+
+      matchingKeys.slice(0, 12).forEach((key) => {
+        const option = document.createElement('option');
+        option.value = key;
+        destinationList.appendChild(option);
+      });
+    };
+
     const showDestination = (rawInput) => {
       const trimmed = (rawInput || '').trim();
 
@@ -740,6 +760,16 @@
       }
     };
 
+    const handleDestinationInput = (event) => {
+      const value = event.target.value;
+      updateDatalistOptions(value);
+
+      const matchedKey = findDestinationKey(value);
+      if (matchedKey) {
+        showDestination(matchedKey);
+      }
+    };
+
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       showDestination(destinationInput.value);
@@ -753,11 +783,14 @@
       showDestination(destinationInput.value);
     });
 
+    destinationInput.addEventListener('input', handleDestinationInput);
+
     suggestionButtons.forEach((button) => {
       button.addEventListener('click', () => {
         const destinationKey = button.dataset.destination || button.textContent.trim();
         destinationInput.value = destinationKey;
         showDestination(destinationKey);
+        updateDatalistOptions(destinationKey);
         destinationInput.focus();
       });
     });
@@ -766,6 +799,8 @@
     if (initialConfig) {
       mapHint.textContent = `${initialConfig.label}의 대표 관광명소 ${initialConfig.attractions.length}곳을 지도에 표시했어요.`;
     }
+
+    updateDatalistOptions(destinationInput.value);
   </script>
 </body>
 </html>
